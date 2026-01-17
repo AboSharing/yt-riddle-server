@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>YT Riddle</title>
+</head>
+<body>
+  <h1>YT-Rätsel Login</h1>
+
+  <input id="code" placeholder="Zugangscode">
+  <button onclick="login()">Einloggen</button>
+
+  <p id="message"></p>
+
+  <script>
+    const BASE_URL = "https://yt-riddle-server-production.up.railway.app/"; // z.B. https://yt-riddle-server-production.up.railway.app
+
+    async function login() {
+      const code = document.getElementById("code").value;
+
+      try {
+        const res = await fetch(BASE_URL + "/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+
+        if (!res.ok) {
+          document.getElementById("message").innerText = "Falscher Code ❌";
+          return;
+        }
+
+        // Code korrekt → Daily Hint holen
+        const hintRes = await fetch(BASE_URL + "/daily-hint");
+        const data = await hintRes.json();
+        document.getElementById("message").innerText = "✅ " + data.hint;
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("message").innerText = "Fehler beim Server ❌";
+      }
+    }
+  </script>
+</body>
+</html>
