@@ -7,9 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
-
-// Statische Dateien (HTML, CSS, JS) aus public/
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); // HTML/CSS/JS
 
 // === Zugangscodes ===
 const ACCESS_CODES = ["YT-SECRET-123", "YT-SECRET-456", "YT-SECRET-789"];
@@ -21,20 +19,18 @@ const hints = {
   "2026-01-19": { hint: "Minute 2:05, Puzzle lösen 🧩", codePart: "EF56" }
 };
 
-// === Health Check Endpoint (hält Railway Container alive) ===
-app.get("/health", (req, res) => {
-  res.send("OK ✅ Server lebt");
-});
+// === Health Endpoint für Railway, damit Container alive bleibt ===
+app.get("/health", (req, res) => res.send("OK ✅ Server lebt"));
 
-// === Login-Endpunkt ===
+// === Login ===
 app.post("/login", (req, res) => {
   const { code } = req.body;
-  console.log("Eingegebener Code:", code); // Debug
+  console.log("Eingegebener Code:", code);
   if (!ACCESS_CODES.includes(code)) return res.status(401).json({ ok: false });
   res.json({ ok: true });
 });
 
-// === Daily Hint-Endpunkt ===
+// === Daily Hint ===
 app.get("/daily-hint", (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
   const todayData = hints[today];
@@ -43,11 +39,11 @@ app.get("/daily-hint", (req, res) => {
   res.json({ hint: todayData.hint, codePart: todayData.codePart });
 });
 
-// === Alles auf PORT warten lassen ===
+// === Server starten auf Port aus env oder 8080 ===
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log("Server läuft auf Port", PORT));
 
-// === Optional: Prevent idle shutdown (Railway friendly ping) ===
+// === Dummy-Ping alle 25 Sekunden (optional, aber hält Container sicher alive) ===
 setInterval(() => {
   fetch(`http://localhost:${PORT}/health`).catch(() => {});
-}, 25_000); // alle 25 Sekunden
+}, 25_000);
