@@ -1,23 +1,36 @@
 import express from "express";
 const app = express();
 app.use(express.json());
-
-// Statische Dateien aus public/
 app.use(express.static("public"));
 
-// Login-Endpunkt
-const ACCESS_CODES = ["YT-SECRET-123"];
+// === Zugangscodes ===
+// Mehrere Codes für verschiedene Nutzer
+const ACCESS_CODES = ["YT-SECRET-123", "YT-SECRET-456", "YT-SECRET-789"];
+
+// === Daily Hints ===
+// Jeder Tag hat einen Hinweis + optional Teil eines Amazon-Codes
+const hints = {
+  "2026-01-17": { hint: "Schau bei Minute 3:42 👀", codePart: "AB12" },
+  "2026-01-18": { hint: "Video X, Sekunde 1:15 🔑", codePart: "CD34" },
+  "2026-01-19": { hint: "Minute 2:05, Puzzle lösen 🧩", codePart: "EF56" }
+};
+
+// === Login-Endpunkt ===
 app.post("/login", (req, res) => {
   const { code } = req.body;
   if (!ACCESS_CODES.includes(code)) return res.status(401).json({ ok: false });
   res.json({ ok: true });
 });
 
-// Daily Hint
+// === Daily Hint-Endpunkt ===
 app.get("/daily-hint", (req, res) => {
-  const hints = { "2026-01-17": "Schau bei Minute 3:42 👀" };
   const today = new Date().toISOString().slice(0, 10);
-  res.json({ hint: hints[today] || "Heute nichts gefunden." });
+  const todayData = hints[today];
+  if (!todayData) return res.json({ hint: "Heute noch kein Hinweis." });
+
+  // Hinweis + Code-Fragmente zurückgeben
+  res.json({ hint: todayData.hint, codePart: todayData.codePart });
 });
 
-app.listen(process.env.PORT || 3000, () => console.log("Server läuft ✅"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server läuft auf Port", PORT));
