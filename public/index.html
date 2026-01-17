@@ -4,13 +4,11 @@
 <meta charset="UTF-8">
 <title>YT-Rätsel</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background: #f0f0f0; }
-  input { padding: 10px; font-size: 16px; width: 200px; }
-  button { padding: 10px 20px; font-size: 16px; margin-left: 10px; }
+  body { font-family: Arial; text-align: center; background: #f0f0f0; margin-top: 50px; }
+  .container { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 0 15px rgba(0,0,0,0.1); display: inline-block; }
+  input, button { padding: 10px; font-size: 16px; margin: 5px; }
   #message { margin-top: 20px; font-size: 18px; }
-  #codePart { margin-top: 10px; font-weight: bold; color: #2a9d8f; }
-  h1 { color: #264653; }
-  .container { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+  #codePart { font-weight: bold; color: #2a9d8f; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -18,7 +16,6 @@
     <h1>YT-Rätsel Login</h1>
     <input id="code" placeholder="Zugangscode">
     <button onclick="login()">Einloggen</button>
-
     <p id="message"></p>
     <p id="codePart"></p>
   </div>
@@ -42,7 +39,6 @@ async function login() {
       return;
     }
 
-    // Code korrekt → Daily Hint holen
     const hintRes = await fetch(BASE_URL + "/daily-hint");
     const data = await hintRes.json();
     document.getElementById("message").innerText = "✅ " + data.hint;
