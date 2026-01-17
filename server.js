@@ -18,6 +18,7 @@ const hints = {
 // === Login-Endpunkt ===
 app.post("/login", (req, res) => {
   const { code } = req.body;
+  console.log("Eingegebener Code:", code);
   if (!ACCESS_CODES.includes(code)) return res.status(401).json({ ok: false });
   res.json({ ok: true });
 });
