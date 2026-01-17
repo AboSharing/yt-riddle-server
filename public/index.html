@@ -1,45 +1,59 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>YT Riddle</title>
+<meta charset="UTF-8">
+<title>YT-Rätsel</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background: #f0f0f0; }
+  input { padding: 10px; font-size: 16px; width: 200px; }
+  button { padding: 10px 20px; font-size: 16px; margin-left: 10px; }
+  #message { margin-top: 20px; font-size: 18px; }
+  #codePart { margin-top: 10px; font-weight: bold; color: #2a9d8f; }
+  h1 { color: #264653; }
+  .container { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+</style>
 </head>
 <body>
-  <h1>YT-Rätsel Login</h1>
+  <div class="container">
+    <h1>YT-Rätsel Login</h1>
+    <input id="code" placeholder="Zugangscode">
+    <button onclick="login()">Einloggen</button>
 
-  <input id="code" placeholder="Zugangscode">
-  <button onclick="login()">Einloggen</button>
+    <p id="message"></p>
+    <p id="codePart"></p>
+  </div>
 
-  <p id="message"></p>
+<script>
+const BASE_URL = "DEINE-SERVER-URL"; // z.B. https://yt-riddle-server-production.up.railway.app
 
-  <script>
-    const BASE_URL = "https://yt-riddle-server-production.up.railway.app/"; // z.B. https://yt-riddle-server-production.up.railway.app
+async function login() {
+  const code = document.getElementById("code").value;
 
-    async function login() {
-      const code = document.getElementById("code").value;
+  try {
+    const res = await fetch(BASE_URL + "/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code })
+    });
 
-      try {
-        const res = await fetch(BASE_URL + "/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code })
-        });
-
-        if (!res.ok) {
-          document.getElementById("message").innerText = "Falscher Code ❌";
-          return;
-        }
-
-        // Code korrekt → Daily Hint holen
-        const hintRes = await fetch(BASE_URL + "/daily-hint");
-        const data = await hintRes.json();
-        document.getElementById("message").innerText = "✅ " + data.hint;
-
-      } catch (err) {
-        console.error(err);
-        document.getElementById("message").innerText = "Fehler beim Server ❌";
-      }
+    if (!res.ok) {
+      document.getElementById("message").innerText = "Falscher Code ❌";
+      document.getElementById("codePart").innerText = "";
+      return;
     }
-  </script>
+
+    // Code korrekt → Daily Hint holen
+    const hintRes = await fetch(BASE_URL + "/daily-hint");
+    const data = await hintRes.json();
+    document.getElementById("message").innerText = "✅ " + data.hint;
+    document.getElementById("codePart").innerText = "Teil-Code: " + data.codePart;
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("message").innerText = "Fehler beim Server ❌";
+    document.getElementById("codePart").innerText = "";
+  }
+}
+</script>
 </body>
 </html>
