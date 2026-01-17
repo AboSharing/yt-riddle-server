@@ -2,9 +2,7 @@ const socket = io();
 const joinBtn = document.getElementById('joinBtn');
 const nicknameInput = document.getElementById('nickname');
 const leaderboardDiv = document.getElementById('leaderboard');
-const activeDiv = document.createElement('div');
-activeDiv.id = 'active-players';
-document.querySelector('.container').prepend(activeDiv);
+const activeDiv = document.getElementById('active-players');
 
 let nickname = '';
 
