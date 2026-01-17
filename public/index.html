@@ -1,38 +1,22 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multiplayer Game</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Multiplayer Lobby</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-  <h1>Multiplayer Challenge</h1>
+    <div class="container">
+        <h1>Gurkendisco Multiplayer</h1>
+        <input type="text" id="nickname" placeholder="Nickname eingeben">
+        <button id="joinBtn">Lobby beitreten</button>
 
-  <!-- Nickname -->
-  <div class="nickname">
-    <input type="text" id="nickname" placeholder="Nickname eingeben">
-    <button id="joinBtn">Lobby betreten</button>
-  </div>
+        <div id="active-players"></div>
 
-  <!-- Spielauswahl -->
-  <div class="game-selection">
-    <h2>Spiele</h2>
-    <button class="game-btn" data-game="clicker">Klicker</button>
-    <button class="game-btn" data-game="jumpnrun">Jump'n'Run</button>
-    <button class="game-btn" data-game="reaction">Reaktionsspiel</button>
-    <button class="game-btn" data-game="comingsoon">… weitere folgen</button>
-  </div>
-
-  <!-- Leaderboards -->
-  <h2>Gesamt-Scoreboard Top 10</h2>
-  <div id="leaderboard"></div>
-
-  <p class="hint">Scores aus allen Spielen werden zusammengezählt.</p>
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="script.js"></script>
+        <h2>Leaderboard</h2>
+        <div id="leaderboard"></div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
