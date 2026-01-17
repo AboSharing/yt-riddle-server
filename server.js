@@ -1,85 +1,62 @@
+// server.js
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const fs = require('fs');
-
-app.use(express.static('public'));
-
 const PORT = process.env.PORT || 8080;
 
 // Leaderboard speichern
-const leaderboardFile = './data/leaderboard.json';
 let leaderboard = {};
-if(fs.existsSync(leaderboardFile)) {
-    leaderboard = JSON.parse(fs.readFileSync(leaderboardFile));
-}
+let activePlayers = {}; // socket.id => {name, isAdmin}
 
-// Spieler in Lobby
-let activePlayers = {};
+app.use(express.static('public'));
 
-// Admin
-const ADMIN_NAME = "Gurkendisco";
-
-// Socket.io Verbindung
-io.on('connection', (socket) => {
+// Lobby-Events
+io.on('connection', socket => {
     console.log('Neuer Spieler verbunden');
 
-    // Spieler beitreten
-    socket.on('join', (nickname) => {
+    socket.on('join', ({ nickname, password }) => {
+        // Admin-Check
+        let isAdmin = false;
+        if(nickname === 'Google') {
+            if(password !== '123') {
+                socket.emit('nickname-error', 'Falsches Admin-Passwort!');
+                return;
+            } else {
+                isAdmin = true;
+            }
+        }
 
-        // Nickname prüfen
-        if(activePlayers[nickname]) {
+        // Prüfen, ob der Name schon vergeben ist
+        if(Object.values(activePlayers).some(p => p.name === nickname)) {
             socket.emit('nickname-error', 'Nickname bereits vergeben!');
             return;
         }
 
-        // Spieler hinzufügen
-        activePlayers[nickname] = { socketId: socket.id, joinedAt: Date.now(), score: 0 };
+        activePlayers[socket.id] = { name: nickname, isAdmin };
+        console.log(`${nickname} ist jetzt aktiv${isAdmin ? ' (Admin)' : ''}`);
 
-        // Lobby-Update senden
-        io.emit('lobby-update', { 
-            players: Object.keys(activePlayers),
-            count: Object.keys(activePlayers).length,
-            displayNames: Object.keys(activePlayers).map(name => 
-                name === ADMIN_NAME ? `<span class="admin">${name} (Admin)</span>` : name
-            )
-        });
-
-        // Leaderboard an neuen Spieler senden
-        socket.emit('leaderboard', leaderboard);
+        // Lobby aktualisieren
+        updateLobby();
     });
 
-    // Spieler verlässt Verbindung
-    socket.on('disconnect', () => {
-        for(const [nick, info] of Object.entries(activePlayers)) {
-            if(info.socketId === socket.id) {
-                delete activePlayers[nick];
-            }
+    socket.on('chat-message', msg => {
+        const player = activePlayers[socket.id];
+        if(player) {
+            io.emit('chat-message', { name: player.name, message: msg, isAdmin: player.isAdmin });
         }
-        io.emit('lobby-update', { 
-            players: Object.keys(activePlayers),
-            count: Object.keys(activePlayers).length,
-            displayNames: Object.keys(activePlayers).map(name => 
-                name === ADMIN_NAME ? `<span class="admin">${name} (Admin)</span>` : name
-            )
-        });
     });
 
-    // Score aktualisieren (für Spiele später)
-    socket.on('update-score', ({nickname, game, points}) => {
-        if(!leaderboard[nickname]) leaderboard[nickname] = { totalScore: 0, games: {} };
-        leaderboard[nickname].games[game] = points;
-        leaderboard[nickname].totalScore = Object.values(leaderboard[nickname].games).reduce((a,b)=>a+b,0);
-
-        // Leaderboard speichern
-        fs.writeFileSync(leaderboardFile, JSON.stringify(leaderboard, null, 2));
-
-        // Leaderboard an alle senden
-        io.emit('leaderboard', leaderboard);
+    socket.on('disconnect', () => {
+        delete activePlayers[socket.id];
+        updateLobby();
     });
 });
 
-http.listen(PORT, () => {
-    console.log(`Server läuft auf Port ${PORT}`);
-});
+function updateLobby() {
+    const displayNames = Object.values(activePlayers).map(p => p.isAdmin ? `<span class="admin">${p.name} (Admin)</span>` : p.name);
+    io.emit('lobby-update', { count: Object.keys(activePlayers).length, displayNames });
+}
+
+http.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
