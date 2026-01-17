@@ -2,25 +2,29 @@ const socket = io();
 const joinBtn = document.getElementById('joinBtn');
 const nicknameInput = document.getElementById('nickname');
 const leaderboardDiv = document.getElementById('leaderboard');
-const gameButtons = document.querySelectorAll('.game-btn');
+const activeDiv = document.createElement('div');
+activeDiv.id = 'active-players';
+document.querySelector('.container').prepend(activeDiv);
 
 let nickname = '';
 
-// Lobby beitreten
 joinBtn.addEventListener('click', () => {
-  if(!nicknameInput.value) return alert("Bitte Nickname eingeben!");
-  nickname = nicknameInput.value;
-  socket.emit('join', nickname);
+    if(!nicknameInput.value) return alert("Bitte Nickname eingeben!");
+    nickname = nicknameInput.value;
+    socket.emit('join', nickname);
 });
 
-// Spiel auswählen
-gameButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    if(!nickname) return alert("Bitte zuerst Nickname eingeben!");
-    const game = btn.dataset.game;
-    if(game === "comingsoon") return alert("Dieses Spiel kommt bald!");
-    window.location.href = `/games/${game}.html?nickname=${nickname}`;
-  });
+socket.on('nickname-error', msg => {
+    alert(msg);
+});
+
+// Lobby-Update
+socket.on('lobby-update', data => {
+    const { count, displayNames } = data;
+    activeDiv.innerHTML = `<h3>Spieler online: ${count}</h3>`;
+    displayNames.forEach(name => {
+        activeDiv.innerHTML += `<div>${name}</div>`;
+    });
 });
 
 // Leaderboard aktualisieren
